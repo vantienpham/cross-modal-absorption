@@ -1,0 +1,58 @@
+[project]
+name = "xmodal"
+version = "0.1.0"
+description = "Calibrated cross-modal absorption in vision-language models"
+readme = "README.md"
+# Upper bound is load-bearing: unbounded, uv resolves the newest managed CPython
+# and torch 2.6.0 publishes no wheel past cp313, so the sync fails with a
+# platform error rather than anything about Python versions.
+requires-python = ">=3.10,<3.13"
+
+dependencies = [
+    # torch is CAPPED BELOW 2.7 ON PURPOSE. An unconstrained resolve pulls a
+    # +cu130 build, which fails on this cluster's 560.35.05 partitions twice
+    # over (driver below CUDA 13's minimum, and no sm_61/sm_70 cubins at all).
+    # slurm/setup_remote.sh then force-installs 2.6.0+cu124 over whatever the
+    # lockfile picked. See cluster.local.md, "Why the pin exists".
+    "torch<2.7",
+    "torchvision<0.22",
+    # 4.52.4 is the version whose in-processor image-token expansion this
+    # project's modality mask depends on (src/xmodal/modality.py). Pinned
+    # exactly: the expansion behaviour has changed across releases before, and
+    # a change would not raise, it would move the visual/text boundary.
+    "transformers==4.52.4",
+    "tokenizers==0.21.1",
+    "accelerate==1.7.0",
+    "huggingface-hub==0.32.4",
+    "datasets==2.19.1",
+    "sentencepiece==0.2.0",
+    # LLaVA-Next's tokenizer is converted from a sentencepiece model at load
+    # time, which needs protobuf. LLaVA-1.5 does not, so this only shows up
+    # when a second model family is added.
+    "protobuf",
+    "pillow",
+    "numpy",
+    "scipy",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-timeout"]
+plot = ["matplotlib"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/xmodal"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: takes more than a few seconds",
+    "gpu: requires a CUDA device",
+]
+
+[tool.uv]
+package = true

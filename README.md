@@ -1,8 +1,6 @@
 # Cross-modal absorption, calibrated
 
-Code and measured results for *Calibrating cross-modal absorption in
-vision-language models: a null model, its controls, and leverage-based visual
-token selection*.
+Code and measured results for *Calibrating cross-modal absorption]{Calibrating cross-modal absorption in vision-language models: a null model and its controls*.
 
 Recent visual-token pruning work uses a geometric statistic as a signal: the
 fraction of visual-token energy lying in the subspace spanned by the text
